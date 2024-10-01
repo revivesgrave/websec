@@ -1,0 +1,690 @@
+<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#websec</title>
+    <style>
+        html,
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            /* Align content at the top */
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding-top: 60px;
+            /* Space for navbar */
+            overflow: hidden;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .glow {
+            display: inline-block;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff;
+            color: #ffffff;
+            text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 15px #ffffff;
+            display: inline-block;
+            padding: 10px;
+            font-size: 1.5em;
+            border-radius: 5px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            /* 5 columns for 5 boxes */
+            gap: 20px;
+            justify-items: center;
+            /* Center items horizontally */
+            align-items: center;
+            /* Center items vertically */
+            padding: 20px;
+            margin-top: 20px;
+            /* Adjust margin to move boxes higher */
+        }
+
+        .box {
+            background-color: #0e0e0e;
+            box-shadow: 0px 0px 30px rgb(0, 0, 0);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, background-color 0.3s;
+            width: 200px;
+            /* Adjust box width */
+            height: 300px;
+        }
+
+        .warning {
+            display: none;
+            text-align: center;
+        }
+
+        .box:hover {
+            background-color: #333;
+            transform: scale(1.05);
+        }
+
+        .profile-pic {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin: 0;
+        }
+
+        .navbar a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: #ffffff;
+            transition: width 0.3s ease;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        .navbar {
+            background-color: #050505;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            text-decoration: none;
+            align-items: center;
+            position: fixed;
+            top: -1rem;
+            width: 100%;
+        }
+
+        .navbar h1 {
+            position: relative;
+            top: 1.3em;
+            left: 2rem;
+            ;
+            margin: 0;
+            font-size: 24px;
+            /* Adjust font size */
+            text-decoration: none;
+        }
+
+        .navbar a {
+            position: relative;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            left: 2em;
+            top: 2.05em;
+            padding: 10px 20px;
+            border-radius: 5px;
+            background-color: rgba(255, 0, 0, 0);
+            transition: background-color 0.3s;
+        }
+
+        .navbar a:hover {
+            background-color: #ff000000;
+            color: #ffffff;
+        }
+
+        .search {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            padding: 10px;
+            border-radius: 10px;
+            border-color: #242424;
+            font-size: 1em;
+            color: #ffffff;
+            background: none;
+            top: 36em;
+            box-sizing: border-box;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .search:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .no-user-message {
+            display: none;
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 0px 0px 20px #ff0000;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text" class="search" id="searchInput" placeholder="Find a dox:">
+    <div class="ascii-logo">
+        <pre>
+         ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣶⠶⠿⠷⣶⣄⠀⠀⠀⠀⠀⠀⠀⣠⡶⠿⠛⠷⢶⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+         ⠀⠀⠀⠀⠀⠀⠀⢀⣴⡿⠛⠉⠀⠀⠀⠀⠀⠹⣧⠀⠀⠀⠀⠀⣼⠏⠀⠀⠀⠀⠀⠈⠙⢿⣦⡀⠀⠀⠀⠀⠀⠀⠀
+         ⠀⠀⠀⠀⠀⠀⣠⡿⠋⠀⢀⣠⠞⠋⠀⠀⠀⢠⡿⠀⠀⠀⠀⠀⢻⡆⠀⠀⠀⠈⠻⣦⡀⠀⠘⢿⣆⠀⠀⠀⠀⠀⠀
+         ⠀⠀⠀⠀⠀⣰⡟⠁⠀⢠⡿⠁⠀⠀⠀⠀⣠⣿⠃⠀⠀⠀⠀⠀⠘⣿⣦⠀⠀⠀⠀⠈⢻⣄⠀⠀⠻⣧⠀⠀⠀⠀⠀
+         ⠀⠀⠀⠀⣴⠏⠀⠀⢠⡟⠀⣠⠀⠀⠀⣼⠟⠁⠀⠀⠀⠀⠀⠀⠀⠈⠻⣷⡀⠀⠀⣄⠀⢻⣆⠀⠀⠹⣧⠀⠀⠀⠀
+         ⠀⠀⠀⣰⠏⠀⠀⢰⣿⣇⣰⠋⠀⠀⠀⢿⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡾⠁⠀⠀⠘⣧⣼⣿⣆⠀⠀⠹⣧⠀⠀⠀
+         ⠀⠀⢰⡏⠀⠀⢰⣿⣿⣿⡇⢠⡟⠀⠀⠀⣹⡇⠀⠀⠀⠀⠀⠀⠀⠸⣏⡀⠀⠀⠸⡆⢸⣿⣿⣿⣇⠀⠀⠹⣇⠀⠀
+         ⠀⢠⡟⠀⠀⢰⡾⠈⣿⣿⣧⣿⢀⡶⠀⣼⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣷⡀⢶⡀⢿⣼⣿⣿⠙⢿⡆⠀⠀⢻⡆⠀
+         ⠀⣾⠁⠀⢠⣼⠃⠀⣸⢏⣿⣧⣼⠃⣼⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣧⠈⣧⣼⣿⡿⣏⠀⠘⣧⡄⠀⠈⣷⠀
+         ⢰⡏⠀⠀⢸⡟⠀⢠⡟⠘⠿⢻⣿⣷⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⡿⠟⠃⢹⡄⠀⢹⡇⠀⠀⢹⡇
+         ⢸⡇⠀⠀⣸⡇⠀⣾⠁⢀⡏⠈⢻⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣏⠀⢸⡄⠈⣷⡀⢸⣧⠀⠀⠸⡇
+         ⢸⠀⠀⢀⡟⠻⣾⣿⡀⣸⠃⢠⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣆⠈⣧⠀⣿⣷⡟⢻⡀⠀⠀⡇
+         ⢸⠃⠀⢸⣇⣾⢹⡟⣿⣿⣤⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣤⣿⣿⢹⣇⣿⣼⡏⠀⠀⡇
+         ⢸⠀⠀⢸⣿⠏⣽⢸⣿⣿⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⣿⣿⣇⣿⠽⣿⣧⠀⠀⡇
+         ⢸⡆⠀⣼⠁⠀⡏⠘⢿⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡿⠃⢸⠀⠈⣷⠀⢰⡇
+         ⠸⣷⠀⢻⠀⢰⡇⠀⢸⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣇⣀⢸⡇⠀⡟⠀⣾⠇
+         ⠀⢿⡄⢸⠀⣼⡧⣿⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⣟⣸⣧⡀⡇⢠⣿⠀
+         ⠀⠸⣇⢸⣾⣿⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⣿⣿⡇⣸⠇⠀
+         ⠀⠀⢻⣼⣿⠿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠷⢾⢧⡿⠀⠀
+         ⠀⠀⠈⢿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡿⠁⠀
+
+
+         ____      ____ ________ ______    ______   ________   ______  
+         |_  _|    |_  _|_   __  |_   _ \ .' ____ \ |_   __  |.' ___  | 
+           \ \  /\  / /   | |_ \_| | |_) || (___ \_|  | |_ \_/ .'   \_| 
+            \ \/  \/ /    |  _| _  |  __'. _.____`.   |  _| _| |        
+             \  /\  /    _| |__/ |_| |__) | \____) | _| |__/ \ `.___.'\ 
+              \/  \/    |________|_______/ \______.'|________|`.____ .'                     
+    ────────────────────────────────────────────────────────────────────────
+    ▓│               Below is a bunch of Degenerate assholes                │▓
+    ▓│──────────────────────────────────────────────────────────────────────│▓
+
+
+        </pre>
+    </div>
+    <div class="navbar">
+        <div style="display: flex; align-items: center;">
+            <h1 class="glow" style="margin: 0; cursor:default;">Websec</h1>
+            <a href="https://yw1Cv0AukXlL.lol/lists" target="_blank" style="color: #bbb; margin-left: 10px; text-decoration: none;">Leaks</a>
+            <a href="https://yw1Cv0AukXlL.lol/tos" target="_blank" style="color: #bbb; margin-left: 10px; text-decoration: none;">TOS</a>
+            <a href="https://yw1Cv0AukXlL.lol/members" target="_blank" style="color: #bbb; margin-left: 10px; text-decoration: none;">Members</a>
+            <!-- Replace "https://example.com" with your actual link -->
+        </div>
+    </div>
+
+
+
+    <div class="container">
+
+        <div class="box" onclick="window.location.href='hoa/jevion.html'">
+            <img src="img/jevion.png" alt="" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #d8bb18; font-weight: bold;background-image: url('hoa/glitter/gold.gif');">
+                Jevion Lewis
+            </h5>
+            <br>
+            <p>Sending his nacked shower pics around on cord</p>
+            <p>and having no shame in what he posts</p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+        <div class="box" onclick="window.location.href='hoa/scott.html'">
+            <img src="img/Dasan.png" alt="Jason" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #d8bb18; font-weight: bold;background-image: url('hoa/glitter/gold.gif');">
+                Scott Everett Manwarren
+            </h5>
+            <br>
+            <p>
+            Scott Everett Manwarren has been put on doxbin for raping his 
+            daughter and he should have thought of what he Had done but he 
+            didn't think so he rapidly raped his daughter 
+            </p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+        <div class="box" onclick="window.location.href='hoa/harryfrench.html'">
+            <img src="img/hfrench.jpg" alt="" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #bb71e4; font-weight: bold;background-image: url('hoa/glitter/purple.gif');">
+                Harry French
+            </h5>
+            <br>
+            <p>in his words the next generation of doxers</p>
+            <p>Considering this guy has no clue about anything</p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+        <div class="box" onclick="window.location.href='hoa/given.html'">
+            <img src="img/given.png" alt="Given" class="profile-pic">
+            <br>
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #bb71e4; font-weight: bold;background-image: url('hoa/glitter/purple.gif');">
+                Given
+            </h5>
+            <br>
+            <p>So this is given a 17 yr old pedo</p>
+            <p>That watches CP on discord and sends it to him and his mates</p>
+            <p>hes a weirdo and a creep</p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+        <div class="box" onclick="window.location.href='hoa/syn1978.html'">
+            <img src="img/timothy.jpg" alt="Timothy Williams" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #bb71e4; font-weight: bold;background-image: url('hoa/glitter/purple.gif');">
+                Timothy Williams
+            </h5>
+            <br>
+            <p>Reason For Dox was trying to Extort Minors
+                and sending nudes to a girl who is underage and requesting images
+                of her
+            </p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+        <div class="box" onclick="window.location.href='hoa/slamb.html'">
+            <img src="img/slamb.png" alt="Sasha Lambourne" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #bb71e4; font-weight: bold;background-image: url('hoa/glitter/purple.gif');">
+                Sasha Lambourne
+            </h5>
+            <br>
+            <p>this is a story about the teacher that likes to sleep with minors
+                and lead them to her house and buy them expensive gifts for sleeping
+                with her
+            </p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+        <div class="box" onclick="window.location.href='hoa/jrens.html'">
+            <img src="img/jrens.png" alt="Jason" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #bb71e4; font-weight: bold;background-image: url('hoa/glitter/purple.gif');">
+                Jason Renzlow
+            </h5>
+            <br>
+            <p>
+                this is jason a notorious pedo on discord that used to Extort
+                and rat minors to gather thier address or billing information
+                and would show up to the victims house
+            </p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+        <div class="box" onclick="window.location.href='hoa/levijoe.html'">
+            <img src="img/levi.png" alt="Jason" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #bb71e4; font-weight: bold;background-image: url('hoa/glitter/purple.gif');">
+                Levi Joe Pruitt
+            </h5>
+            <br>
+            <p>
+                Being A Bitch online and scamming people for money
+            </p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+        <div class="box" onclick="window.location.href='hoa/dasank.html'">
+            <img src="img/Dasan.png" alt="Jason" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #bb71e4; font-weight: bold;background-image: url('hoa/glitter/purple.gif');">
+                Dasan Ashford
+            </h5>
+            <br>
+            <p>
+                Dasan Ashford he claim to swat and he was also claiming to dox 
+                people people for fun on discord.com he is pronounced as a 
+                skid/larp on discord.com he cant dox or swat hes harmless so 
+                dont let him harm you 
+            </p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+        
+        <div class="box" onclick="window.location.href='hoa/chase.html'">
+            <img src="img/Dasan.png" alt="Jason" class="profile-pic">
+            <h5 class="title" style="font-size: 24px; margin: 0px 20px 0px 2px; padding-top: 0px; display: inline-block;color: #ffffff; font-weight: bold;background-image: url('hoa/glitter/purple.gif');">
+                Chace Mackenzie
+            </h5>
+            <br>
+            <p>
+            Chace Mackenzie is a discord packer that likes to talk 
+            shit in a server vc and he claims he steals social media accounts
+            when he skids/larps script codes and he also thinks he harmful
+            </p>
+            <br>
+            <p>Click Me For Full dox</p>
+        </div>
+
+
+
+    </div>
+    <canvas id="cursor-canvas"></canvas>
+
+    <script>
+        // Add an event listener for the search input
+        document.getElementById('searchInput').addEventListener('input', function () {
+            var filter = this.value.toLowerCase();
+            var boxes = document.getElementsByClassName('box');
+
+            var noUserMessage = document.querySelector('.no-user-message');
+            var anyVisible = false;
+
+            for (var i = 0; i < boxes.length; i++) {
+                var box = boxes[i];
+                var text = box.innerText.toLowerCase();
+
+                if (text.includes(filter)) {
+                    box.style.display = '';
+                    anyVisible = true;
+                } else {
+                    box.style.display = 'none';
+                }
+            }
+
+            if (anyVisible) {
+                noUserMessage.style.display = 'none';
+            } else {
+                noUserMessage.style.display = 'block';
+            }
+        });
+    </script>
+    <div class="no-user-message">No users found.</div>
+
+    <script>
+        // Function to navigate to Page 2
+        function goToPage2() {
+            window.location.href = 'pages/page2.html';
+        }
+
+        // Fairy dust cursor effect
+        function fairyDustCursor(options) {
+            let possibleColors = (options && options.colors) || ["#ffffff", "#ffffff", "#ffffff"];
+            let hasWrapperEl = options && options.element;
+            let element = hasWrapperEl || document.body;
+
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            const cursor = { x: width / 2, y: width / 2 };
+            const lastPos = { x: width / 2, y: width / 2 };
+            const particles = [];
+            const canvImages = [];
+            let canvas, context, animationFrame;
+
+            const char = "*";
+
+            const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+            // Re-initialise or destroy the cursor when the prefers-reduced-motion setting changes
+            prefersReducedMotion.onchange = () => {
+                if (prefersReducedMotion.matches) {
+                    destroy();
+                } else {
+                    init();
+                }
+            };
+
+            function init() {
+                // Don't show the cursor trail if the user has prefers-reduced-motion enabled
+                if (prefersReducedMotion.matches) {
+                    console.log("This browser has prefers reduced motion turned on, so the cursor did not init");
+                    return false;
+                }
+
+                canvas = document.createElement("canvas");
+                context = canvas.getContext("2d");
+                canvas.style.top = "0px";
+                canvas.style.left = "0px";
+                canvas.style.pointerEvents = "none";
+
+                if (hasWrapperEl) {
+                    canvas.style.position = "absolute";
+                    element.appendChild(canvas);
+                    canvas.width = element.clientWidth;
+                    canvas.height = element.clientHeight;
+                } else {
+                    canvas.style.position = "fixed";
+                    element.appendChild(canvas);
+                    canvas.width = width;
+                    canvas.height = height;
+                }
+
+                context.font = "21px serif";
+                context.textBaseline = "middle";
+                context.textAlign = "center";
+
+                possibleColors.forEach((color) => {
+                    let measurements = context.measureText(char);
+                    let bgCanvas = document.createElement("canvas");
+                    let bgContext = bgCanvas.getContext("2d");
+
+                    bgCanvas.width = measurements.width;
+                    bgCanvas.height = measurements.actualBoundingBoxAscent + measurements.actualBoundingBoxDescent;
+
+                    bgContext.fillStyle = color;
+                    bgContext.textAlign = "center";
+                    bgContext.font = "21px serif";
+                    bgContext.textBaseline = "middle";
+                    bgContext.fillText(char, bgCanvas.width / 2, measurements.actualBoundingBoxAscent);
+
+                    canvImages.push(bgCanvas);
+                });
+
+                bindEvents();
+                loop();
+            }
+
+            // Bind events that are needed
+            function bindEvents() {
+                element.addEventListener("mousemove", onMouseMove);
+                element.addEventListener("touchmove", onTouchMove, { passive: true });
+                element.addEventListener("touchstart", onTouchMove, { passive: true });
+                window.addEventListener("resize", onWindowResize);
+            }
+
+            function onWindowResize(e) {
+                width = window.innerWidth;
+                height = window.innerHeight;
+
+                if (hasWrapperEl) {
+                    canvas.width = element.clientWidth;
+                    canvas.height = element.clientHeight;
+                } else {
+                    canvas.width = width;
+                    canvas.height = height;
+                }
+            }
+
+            function onTouchMove(e) {
+                if (e.touches.length > 0) {
+                    for (let i = 0; i < e.touches.length; i++) {
+                        addParticle(
+                            e.touches[i].clientX,
+                            e.touches[i].clientY,
+                            canvImages[Math.floor(Math.random() * canvImages.length)]
+                        );
+                    }
+                }
+            }
+
+            function onMouseMove(e) {
+                window.requestAnimationFrame(() => {
+                    if (hasWrapperEl) {
+                        const boundingRect = element.getBoundingClientRect();
+                        cursor.x = e.clientX - boundingRect.left;
+                        cursor.y = e.clientY - boundingRect.top;
+                    } else {
+                        cursor.x = e.clientX;
+                        cursor.y = e.clientY;
+                    }
+
+                    const distBetweenPoints = Math.hypot(cursor.x - lastPos.x, cursor.y - lastPos.y);
+
+                    if (distBetweenPoints > 1.5) {
+                        addParticle(
+                            cursor.x,
+                            cursor.y,
+                            canvImages[Math.floor(Math.random() * possibleColors.length)]
+                        );
+
+                        lastPos.x = cursor.x;
+                        lastPos.y = cursor.y;
+                    }
+                });
+            }
+
+            function addParticle(x, y, color) {
+                particles.push(new Particle(x, y, color));
+            }
+
+            function updateParticles() {
+                if (particles.length == 0) {
+                    return;
+                }
+
+                context.clearRect(0, 0, width, height);
+
+                // Update
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update(context);
+                }
+
+                // Remove dead particles
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    if (particles[i].lifeSpan < 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+
+                if (particles.length == 0) {
+                    context.clearRect(0, 0, width, height);
+                }
+            }
+
+            function loop() {
+                updateParticles();
+                animationFrame = requestAnimationFrame(loop);
+            }
+
+            function destroy() {
+                canvas.remove();
+                cancelAnimationFrame(animationFrame);
+                element.removeEventListener("mousemove", onMouseMove);
+                element.removeEventListener("touchmove", onTouchMove);
+                element.removeEventListener("touchstart", onTouchMove);
+                window.addEventListener("resize", onWindowResize);
+            };
+
+            function Particle(x, y, canvasItem) {
+                const lifeSpan = Math.floor(Math.random() * 30 + 60);
+                this.initialLifeSpan = lifeSpan; //
+                this.lifeSpan = lifeSpan; //ms
+                this.velocity = {
+                    x: (Math.random() < 0.5 ? -1 : 1) * (Math.random() / 2),
+                    y: Math.random() * 0.7 + 0.9,
+                };
+                this.position = { x: x, y: y };
+                this.canv = canvasItem;
+
+                this.update = function (context) {
+                    this.position.x += this.velocity.x;
+                    this.position.y += this.velocity.y;
+                    this.lifeSpan--;
+
+                    this.velocity.y += 0.02;
+
+                    const scale = Math.max(this.lifeSpan / this.initialLifeSpan, 0);
+
+                    context.drawImage(
+                        this.canv,
+                        this.position.x - (this.canv.width / 2) * scale,
+                        this.position.y - this.canv.height / 2,
+                        this.canv.width * scale,
+                        this.canv.height * scale
+                    );
+                };
+            }
+
+            init();
+
+            return {
+                destroy: destroy
+            }
+        }
+
+        // Initialize fairy dust cursor
+        fairyDustCursor();
+
+        // You can customize the options if needed, like colors:
+        // fairyDustCursor({ colors: ['#D61C59', '#E7D84B', '#1B8798'] });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const titleText = "#";websec
+            let index = 0;
+            let deleting = false;
+            let delay = 150;
+            let initialTitleSet = false;
+    
+            function typeTitle() {
+                if (!deleting) {
+                    if (index < titleText.length) {
+                        document.title = titleText.substring(0, index + 1);
+                        index++;
+                    } else {
+                        deleting = true;
+                        delay = 500;
+                    }
+                } else {
+                    if (index > 0) {
+                        document.title = titleText.substring(0, index - 1);
+                        index--;
+                        delay = 100;  // Speed up the deleting effect
+                    } else {
+                        // Briefly set the title to an empty string
+                        document.title = "";
+                        setTimeout(() => {
+                            // Apply a visible space if needed, or leave empty
+                            document.title = " ";  // Use a single space or leave empty depending on behavior
+                            setTimeout(() => {
+                                document.title = titleText;  // Restart the animation
+                                index = 0;  // Reset index to start typing from the beginning
+                                deleting = false;  // Reset deleting flag
+                                typeTitle();  // Restart typing effect
+                            }, 0);  // Wait for a brief moment
+                        }, 100);  // Briefly blank the title
+                        return;
+                    }
+                }
+    
+                setTimeout(typeTitle, delay);
+            }
+    
+            typeTitle();
+        });
+    </script>
+
+
+
+
+</body></html>
